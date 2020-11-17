@@ -13,7 +13,7 @@ OpenShift cluster in _Module 1_ or/and _Module 2_.
 
 [WARNING]
 ====
-If you have already deployed the _transaction_ and _ account_ microservices from Module 1, you can skip this step and move to section "1. Enabling automatic sidecar injection"
+If you have already deployed the _transaction_ and _account_ microservices from Module 1, you can skip this step and move to section "1. Enabling automatic sidecar injection"
 ====
 
 **In case you haven’t done Module 1 or Module 2 today**, or you didn’t quite complete them, you should deploy the bankdemo application and microservices by executing the following shell scripts in CodeReady Workspaces Terminal:
@@ -23,18 +23,18 @@ The following script will deploy the transaction service:
 [source, shell, role="copypaste"]
 ----
 sh $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/istio/scripts/deploy-transaction.sh {{ USER_ID }}  && \
-sh $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/istio/scripts/deploy- account.sh {{ USER_ID }}
+sh $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/istio/scripts/deploy-account.sh {{ USER_ID }}
 ----
 
 [WARNING]
 ====
-It sometimes takes time to create a new build image for network latency in OpenShift. So if you got failed to deploy  account-service with *Error from server (NotFound): services " account-springboot" not found*. Please try again with delay via the following command:
+It sometimes takes time to create a new build image for network latency in OpenShift. So if you got failed to deploy account-service with *Error from server (NotFound): services " account-springboot" not found*. Please try again with delay via the following command:
 ====
 
 [source, sh, role="copypaste"]
 ----
 sh $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/istio/scripts/deploy-transaction.sh {{ USER_ID }}  && \
-sh $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/istio/scripts/deploy- account.sh {{ USER_ID }} 3m
+sh $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/istio/scripts/deploy-account.sh {{ USER_ID }} 3m
 ----
 
 Wait for the commands to complete. This will build and deploy the _transaction_ and _ account_ components into their own namespaces. They won’t automatically get Istio sidecar proxy containers yet, but you’ll add that in the next step!
@@ -52,11 +52,11 @@ The webhook checks the configuration of pods deploying into all projects to see 
 
 ==== Confirm `transaction` and ` account` services are running
 
-First, confirm you have running  account service and associated database with the following command:
+First, confirm you have running account service and associated database with the following command:
 
 [source,sh,role="copypaste"]
 ----
-oc get pods -n {{USER_ID}}- account --field-selector status.phase=Running
+oc get pods -n {{USER_ID}}-account --field-selector status.phase=Running
 ----
 
 You should see two pods running (one for the service, and one for its database):
@@ -94,9 +94,9 @@ First, do the databases and wait for them to be re-deployed:
 [source,sh,role="copypaste"]
 ----
 oc patch dc/transaction-database -n {{USER_ID}}-transaction --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
-oc patch dc/ account-database -n {{USER_ID}}- account --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
+oc patch dc/account-database -n {{USER_ID}}-account --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
 oc rollout status -w dc/transaction-database -n {{USER_ID}}-transaction && \
-oc rollout status -w dc/ account-database -n {{USER_ID}}- account
+oc rollout status -w dc/account-database -n {{USER_ID}}-account
 ----
 
 This should take about 1 minute to finish.
@@ -112,9 +112,9 @@ Next, let's add sidecars to our services and wait for them to be re-deployed:
 ----
 oc patch dc/transaction -n {{USER_ID}}-transaction --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
 oc rollout latest dc/transaction -n {{USER_ID}}-transaction && \
-oc patch dc/ account-springboot -n {{USER_ID}}- account --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
+oc patch dc/account-springboot -n {{USER_ID}}-account --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
 oc rollout status -w dc/transaction -n {{USER_ID}}-transaction && \
-oc rollout status -w dc/ account-springboot -n {{USER_ID}}- account
+oc rollout status -w dc/account-springboot -n {{USER_ID}}-account
 ----
 
 This should also take about 1 minute to finish. When it's done, verify that the `transaction-database` is running with 2 pods (`2/2` in the `READY` column) with this command:
@@ -133,11 +133,11 @@ transaction-2-2p9bx            2/2     Running   0          65s
 transaction-database-2-4rzlh   2/2     Running   0          82s
 ----
 
-Do the same for the  account and confirm they also show the "2/2" pods running:
+Do the same for the account and confirm they also show the "2/2" pods running:
 
 [source,sh,role="copypaste"]
 ----
-oc get pods -n {{USER_ID}}- account --field-selector="status.phase=Running"
+oc get pods -n {{USER_ID}}-account --field-selector="status.phase=Running"
 ----
 
 [source,console,role="copypaste"]
@@ -152,14 +152,14 @@ NAME                         READY   STATUS    RESTARTS   AGE
 It may take a minute or two before the `transaction` and ` account` services are recognized and brought into the mesh.
 ====
 
-Next, let's create a virtual service to send incoming traffic to the  account. Open the empty ` account-default.yaml` file in _ account/rules_ directory to copy the following _VirtualService_ into the empty file using CodeReady Workspaces:
+Next, let's create a virtual service to send incoming traffic to the account. Open the empty `account-default.yaml` file in _ account/rules_ directory to copy the following _VirtualService_ into the empty file using CodeReady Workspaces:
 
 [source,yaml, role="copypaste"]
 ----
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name:  account-default
+  name: account-default
 spec:
   hosts:
   - "istio-ingressgateway-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}"
@@ -170,12 +170,10 @@ spec:
         - uri:
             exact: /services/accounts
         - uri:
-            exact: /services/account
-        - uri:
             exact: /
       route:
         - destination:
-            host:  account-springboot
+            host: account-springboot
             port:
               number: 8080
 ----
@@ -184,7 +182,7 @@ Execute the following command in CodeReady Workspaces Terminal:
 
 [source,sh,role="copypaste"]
 ----
-oc create -f $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/ account/rules/ account-default.yaml -n {{ USER_ID }}- account
+oc create -f $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/account/rules/account-default.yaml -n {{ USER_ID }}-account
 ----
 
 Access the http://istio-ingressgateway-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}[Catalog Service Page^] and ensure it should look something like:
@@ -196,11 +194,11 @@ image:: account-ui-gateway.png[ account, 700]
 It takes a few seconds to reconcile _istio ingress_ with the _gateway_ and _virtual service_. Leave this page open as the _Catalog UI browser_ creates traffic (every 2 seconds) between services, which is useful for testing.
 ====
 
-Ensure if we injected _side car_ to each pods. Access the https://kiali-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}/console/graph/namespaces/?edges=noEdgeLabels&graphType=versionedApp&namespaces={{ USER_ID }}- account%2C{{ USER_ID }}-transaction&unusedNodes=false&injectServiceNodes=true&duration=60&pi=15000&layout=dagre[Kiali Graph page^] and verify that *{{ USER_ID }}-transaction*, *{{ USER_ID }}- account* are selected _Namespaces_ then enable *Traffic Animation* in the _Display_ drop-down to see animated traffic flow from _Catalog service_ to _Inventory service_:
+Ensure if we injected _side car_ to each pods. Access the https://kiali-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}/console/graph/namespaces/?edges=noEdgeLabels&graphType=versionedApp&namespaces={{ USER_ID }}-account%2C{{ USER_ID }}-transaction&unusedNodes=false&injectServiceNodes=true&duration=60&pi=15000&layout=dagre[Kiali Graph page^] and verify that *{{ USER_ID }}-transaction*, *{{ USER_ID }}-account* are selected _Namespaces_ then enable *Traffic Animation* in the _Display_ drop-down to see animated traffic flow from _Catalog service_ to _Inventory service_:
 
 image::kiali_graph_sidecar.png[istio, 700]
 
-You can see the incoming traffic to the  account service along with traffic going to both the  account and transaction databases along each branch. This mirrors what we would expect - when you access the  account frontend, a call is made to the  account backend, which in turn access the transaction and combines it with  account data and returns the result for display.
+You can see the incoming traffic to the account service along with traffic going to both the account and transaction databases along each branch. This mirrors what we would expect - when you access the account frontend, a call is made to the account backend, which in turn access the transaction and combines it with account data and returns the result for display.
 
 [NOTE]
 ====
@@ -260,11 +258,11 @@ spec:
               number: 8080
 ----
 
-Delete the gateway to direct route  account that was setup earlier with:
+Delete the gateway to direct route account that was setup earlier with:
 
 [source,sh,role="copypaste"]
 ----
-oc delete -f $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/ account/rules/ account-default.yaml -n {{ USER_ID }}- account
+oc delete -f $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/account/rules/account-default.yaml -n {{ USER_ID }}-account
 ----
 
 Create the new VirtualService to direct traffic to the transaction service by running the following command via CodeReady Workspaces Terminal:
@@ -324,7 +322,7 @@ Let’s find out if the fault injection works corectly via accessing the http://
 
 image::transaction-dead-ok.png[fault-injection, 700]
 
-Back on the https://kiali-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}/console/graph/namespaces/?edges=noEdgeLabels&graphType=versionedApp&namespaces={{ USER_ID }}- account%2C{{ USER_ID }}-transaction&unusedNodes=false&injectServiceNodes=true&duration=60&pi=15000&layout=dagre[Kiali Graph page^] and you will see `red` traffic from _istio-ingressgateway_ as well as around 50% of requests are displayed as _5xx_ on the right side, _HTTP Traffic_. It may not be _exactly_ 50% since some traffic is coming from the  account and ingress gateway at the same time, but it will approach 50% over time.
+Back on the https://kiali-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}/console/graph/namespaces/?edges=noEdgeLabels&graphType=versionedApp&namespaces={{ USER_ID }}-account%2C{{ USER_ID }}-transaction&unusedNodes=false&injectServiceNodes=true&duration=60&pi=15000&layout=dagre[Kiali Graph page^] and you will see `red` traffic from _istio-ingressgateway_ as well as around 50% of requests are displayed as _5xx_ on the right side, _HTTP Traffic_. It may not be _exactly_ 50% since some traffic is coming from the account and ingress gateway at the same time, but it will approach 50% over time.
 
 [WARNING]
 ====
@@ -495,7 +493,7 @@ Before we move on the next step, clear existing destinationrule, virtural servic
 ----
 oc delete destinationrule/transaction-cb -n {{ USER_ID }}-transaction && \
 oc delete virtualservice/transaction-default -n {{ USER_ID }}-transaction && \
-oc create -f $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/ account/rules/ account-default.yaml -n {{ USER_ID }}- account
+oc create -f $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/account/rules/account-default.yaml -n {{ USER_ID }}-account
 ----
 
 === 6. Enable Authentication using Single Sign-on
@@ -517,7 +515,7 @@ _Red Hat Single Sign-On (RH-SSO)_ is based on the *Keycloak* project and enables
 * *Identity Brokering* - Integrates with 3rd-party Identity Providers including leading social networks as identity source.
 * *REST APIs and Administration GUI* - Specify user federation, role mapping, and client applications with easy-to-use Administration GUI and REST APIs.
 
-We will deploy RH-SSO in a new project. Go to the {{ CONSOLE_URL }}/topology/ns/{{ USER_ID }}- account[Topology View^], click on *Create Project*:
+We will deploy RH-SSO in a new project. Go to the {{ CONSOLE_URL }}/topology/ns/{{ USER_ID }}-account[Topology View^], click on *Create Project*:
 
 image::create_project_topology.png[rhsso, 500]
 
@@ -531,7 +529,7 @@ Click on *From Catalog* in Topology view:
 
 image::create_project_fc.png[rhsso, 700]
 
-Type `ccn-sso` in search box and click on *CCN + Red Hat Single Sign-On 7.4 on OpenJDK + PostgreSQL*  account. Then click on *Instantiate Template*:
+Type `ccn-sso` in search box and click on *CCN + Red Hat Single Sign-On 7.4 on OpenJDK + PostgreSQL* account. Then click on *Instantiate Template*:
 
 image:: account_rhsso.png[rhsso, 700]
 
@@ -646,11 +644,11 @@ Well done, you have enabled RH-SSO to with a custom realm, user and role!
 
 ==== Rename services
 
-In upcoming versions of OpenShift Service Mesh, newer versions of Istio will https://istio.io/docs/ops/configuration/traffic-management/protocol-selection/#automatic-protocol-selection[auto-detect protocols^] like `http`. But for now, we must explicitly include the protocol name in our Kubernetes service names so that we can do advanced things like apply authentication and authorization policies. To do that, run the following commands to update the service names for both  account and transaction:
+In upcoming versions of OpenShift Service Mesh, newer versions of Istio will https://istio.io/docs/ops/configuration/traffic-management/protocol-selection/#automatic-protocol-selection[auto-detect protocols^] like `http`. But for now, we must explicitly include the protocol name in our Kubernetes service names so that we can do advanced things like apply authentication and authorization policies. To do that, run the following commands to update the service names for both account and transaction:
 
 [source,sh,role="copypaste"]
 ----
-oc patch -n {{ USER_ID }}- account svc/ account-springboot -p '{"spec": {"ports":[{"port": 8080, "name": "http"}, {"port": 8443, "name": "https"}]}}'
+oc patch -n {{ USER_ID }}-account svc/account-springboot -p '{"spec": {"ports":[{"port": 8080, "name": "http"}, {"port": 8443, "name": "https"}]}}'
 ----
 
 Turning to back to Istio, let’s create a user-facing authentication policy using JSON Web Tokens (JWTs) and the https://openid.net/connect/[OIDC^] authenticaiton flow.
@@ -663,10 +661,10 @@ apiVersion: authentication.istio.io/v1alpha1
 kind: Policy
 metadata:
   name: auth-policy
-  namespace: {{ USER_ID }}- account
+  namespace: {{ USER_ID }}-account
 spec:
   targets:
-  - name:  account-springboot
+  - name: account-springboot
   origins:
   - jwt:
       issuer: http://sso-{{ USER_ID }}-rhsso.{{ ROUTE_SUBDOMAIN }}/auth/realms/istio
@@ -685,10 +683,10 @@ Then execute the following oc command in CodeReady Workspaces Terminal to create
 
 [source,sh,role="copypaste"]
 ----
-oc create -f $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/ account/rules/ccn-auth-config.yaml -n {{ USER_ID }}- account
+oc create -f $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/account/rules/ccn-auth-config.yaml -n {{ USER_ID }}-account
 ----
 
-Now you can’t access the  account service without authentication of RH-SSO. You confirm it using the following curl command in CodeReady Workspaces Terminal:
+Now you can’t access the account service without authentication of RH-SSO. You confirm it using the following curl command in CodeReady Workspaces Terminal:
 
 [source,sh,role="copypaste"]
 ----
@@ -742,7 +740,7 @@ You should see the following expected output:
 ]
 ----
 
-Congratulations! You’ve integrated RH-SSO with Istio to protect service mesh traffic to the  account service, without having to change the application at all. Istio can use Keycloak to authenticate service-to-service calls (also called "east-west" traffic).
+Congratulations! You’ve integrated RH-SSO with Istio to protect service mesh traffic to the account service, without having to change the application at all. Istio can use Keycloak to authenticate service-to-service calls (also called "east-west" traffic).
 
 For "north-south" traffic, such as traffic coming in from a frontend web application, RH-SSO provides https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.3/html/securing_applications_and_services_guide/openid_connect_3[various adapters^] for apps like Spring Boot, JBoss EAP and others to configure your apps to authenticate against RH-SSO. Quarkus also provides MicroProfile JWT and Keycloak adapters for those types of apps. See the https://quarkus.io/guides[Quarkus Guides^] for more detail.
 
