@@ -57,10 +57,10 @@ Login successful.
 You have access to the following projects and can switch between them with 'oc project <projectname>':
 
   * {{ USER_ID }}-bookinfo
-    {{ USER_ID }}-catalog
+    {{ USER_ID }}-account
     {{ USER_ID }}-cloudnative-pipeline
     {{ USER_ID }}-cloudnativeapps
-    {{ USER_ID }}-inventory
+    {{ USER_ID }}-transaction
     {{ USER_ID }}-istio-system
 
 Using project "{{ USER_ID }}-bookinfo".
@@ -94,8 +94,8 @@ metadata:
 spec:
   members:
     - {{ USER_ID }}-bookinfo <2>
-    - {{ USER_ID }}-catalog
-    - {{ USER_ID }}-inventory
+    - {{ USER_ID }}-account
+    - {{ USER_ID }}-transaction
 ----
 <1> is the istio-system namespace which will hold the _ServiceMeshMemberRoll_ and a bunch of other service mesh related objects.
 <2> is the list of projects that will be part of this _ServiceMesh_; in our case that's the application spread in three different namespaces/projects.

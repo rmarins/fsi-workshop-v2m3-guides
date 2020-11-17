@@ -13,31 +13,31 @@ OpenShift cluster in _Module 1_ or/and _Module 2_.
 
 [WARNING]
 ====
-If you have already deployed the _inventory_ and _catalog_ microservices from Module 1, you can skip this step and move to section "1. Enabling automatic sidecar injection"
+If you have already deployed the _transaction_ and _ account_ microservices from Module 1, you can skip this step and move to section "1. Enabling automatic sidecar injection"
 ====
 
-**In case you haven’t done Module 1 or Module 2 today**, or you didn’t quite complete them, you should deploy the coolstore application and microservices by executing the following shell scripts in CodeReady Workspaces Terminal:
+**In case you haven’t done Module 1 or Module 2 today**, or you didn’t quite complete them, you should deploy the bankdemo application and microservices by executing the following shell scripts in CodeReady Workspaces Terminal:
 
-The following script will deploy the inventory service:
+The following script will deploy the transaction service:
 
 [source, shell, role="copypaste"]
 ----
-sh $CHE_PROJECTS_ROOT/cloud-native-workshop-v2m3-labs/istio/scripts/deploy-inventory.sh {{ USER_ID }}  && \
-sh $CHE_PROJECTS_ROOT/cloud-native-workshop-v2m3-labs/istio/scripts/deploy-catalog.sh {{ USER_ID }}
+sh $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/istio/scripts/deploy-transaction.sh {{ USER_ID }}  && \
+sh $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/istio/scripts/deploy- account.sh {{ USER_ID }}
 ----
 
 [WARNING]
 ====
-It sometimes takes time to create a new build image for network latency in OpenShift. So if you got failed to deploy catalog-service with *Error from server (NotFound): services "catalog-springboot" not found*. Please try again with delay via the following command:
+It sometimes takes time to create a new build image for network latency in OpenShift. So if you got failed to deploy  account-service with *Error from server (NotFound): services " account-springboot" not found*. Please try again with delay via the following command:
 ====
 
 [source, sh, role="copypaste"]
 ----
-sh $CHE_PROJECTS_ROOT/cloud-native-workshop-v2m3-labs/istio/scripts/deploy-inventory.sh {{ USER_ID }}  && \
-sh $CHE_PROJECTS_ROOT/cloud-native-workshop-v2m3-labs/istio/scripts/deploy-catalog.sh {{ USER_ID }} 3m
+sh $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/istio/scripts/deploy-transaction.sh {{ USER_ID }}  && \
+sh $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/istio/scripts/deploy- account.sh {{ USER_ID }} 3m
 ----
 
-Wait for the commands to complete. This will build and deploy the _inventory_ and _catalog_ components into their own namespaces. They won’t automatically get Istio sidecar proxy containers yet, but you’ll add that in the next step!
+Wait for the commands to complete. This will build and deploy the _transaction_ and _ account_ components into their own namespaces. They won’t automatically get Istio sidecar proxy containers yet, but you’ll add that in the next step!
 
 === 1. Enabling automatic sidecar injection
 
@@ -50,13 +50,13 @@ The upstream version of Istio injects the sidecar by default if you have labeled
 The webhook checks the configuration of pods deploying into all projects to see if they are opting in to injection with the appropriate annotation.
 ====
 
-==== Confirm `inventory` and `catalog` services are running
+==== Confirm `transaction` and ` account` services are running
 
-First, confirm you have running catalog service and associated database with the following command:
+First, confirm you have running  account service and associated database with the following command:
 
 [source,sh,role="copypaste"]
 ----
-oc get pods -n {{USER_ID}}-catalog --field-selector status.phase=Running
+oc get pods -n {{USER_ID}}- account --field-selector status.phase=Running
 ----
 
 You should see two pods running (one for the service, and one for its database):
@@ -64,15 +64,15 @@ You should see two pods running (one for the service, and one for its database):
 [source,console]
 ----
 NAME                         READY   STATUS    RESTARTS   AGE
-catalog-database-1-p5hcd     1/1     Running   0          6m4s
-catalog-springboot-1-jdrfs   1/1     Running   0          5m
+ account-database-1-p5hcd     1/1     Running   0          6m4s
+ account-springboot-1-jdrfs   1/1     Running   0          5m
 ----
 
-Do the same for inventory:
+Do the same for transaction:
 
 [source,sh,role="copypaste"]
 ----
-oc get pods -n {{USER_ID}}-inventory --field-selector status.phase=Running
+oc get pods -n {{USER_ID}}-transaction --field-selector status.phase=Running
 ----
 
 You should again see two pods running (one for the service, and one for its database):
@@ -80,23 +80,23 @@ You should again see two pods running (one for the service, and one for its data
 [source,console]
 ----
 NAME                         READY   STATUS    RESTARTS   AGE
-inventory-1-87smf            1/1     Running   0          3m12s
-inventory-database-1-6tvxs   1/1     Running   0          5m16s
+transaction-1-87smf            1/1     Running   0          3m12s
+transaction-database-1-6tvxs   1/1     Running   0          5m16s
 ----
 
 ==== Add sidecars
 
 OpenShift Service Mesh requires that applications "opt-in" to being part of a service mesh by default. To "opt-in" an app, you need to add an annotation which is a flag to istio to attach a sidecar and bring the app into the mesh.
 
-Rather than manually adding the annotations necessary to inject istio sidecars, run the following commands to add the annotations which will trigger a sidecar to be injected into our _inventory_ and _catalog_ microservices, as well as their associated databases.
+Rather than manually adding the annotations necessary to inject istio sidecars, run the following commands to add the annotations which will trigger a sidecar to be injected into our _transaction_ and _ account_ microservices, as well as their associated databases.
 
 First, do the databases and wait for them to be re-deployed:
 [source,sh,role="copypaste"]
 ----
-oc patch dc/inventory-database -n {{USER_ID}}-inventory --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
-oc patch dc/catalog-database -n {{USER_ID}}-catalog --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
-oc rollout status -w dc/inventory-database -n {{USER_ID}}-inventory && \
-oc rollout status -w dc/catalog-database -n {{USER_ID}}-catalog
+oc patch dc/transaction-database -n {{USER_ID}}-transaction --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
+oc patch dc/ account-database -n {{USER_ID}}- account --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
+oc rollout status -w dc/transaction-database -n {{USER_ID}}-transaction && \
+oc rollout status -w dc/ account-database -n {{USER_ID}}- account
 ----
 
 This should take about 1 minute to finish.
@@ -110,18 +110,18 @@ Next, let's add sidecars to our services and wait for them to be re-deployed:
 
 [source,sh,role="copypaste"]
 ----
-oc patch dc/inventory -n {{USER_ID}}-inventory --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
-oc rollout latest dc/inventory -n {{USER_ID}}-inventory && \
-oc patch dc/catalog-springboot -n {{USER_ID}}-catalog --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
-oc rollout status -w dc/inventory -n {{USER_ID}}-inventory && \
-oc rollout status -w dc/catalog-springboot -n {{USER_ID}}-catalog
+oc patch dc/transaction -n {{USER_ID}}-transaction --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
+oc rollout latest dc/transaction -n {{USER_ID}}-transaction && \
+oc patch dc/ account-springboot -n {{USER_ID}}- account --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
+oc rollout status -w dc/transaction -n {{USER_ID}}-transaction && \
+oc rollout status -w dc/ account-springboot -n {{USER_ID}}- account
 ----
 
-This should also take about 1 minute to finish. When it's done, verify that the `inventory-database` is running with 2 pods (`2/2` in the `READY` column) with this command:
+This should also take about 1 minute to finish. When it's done, verify that the `transaction-database` is running with 2 pods (`2/2` in the `READY` column) with this command:
 
 [source,sh,role="copypaste"]
 ----
-oc get pods -n {{USER_ID}}-inventory --field-selector="status.phase=Running"
+oc get pods -n {{USER_ID}}-transaction --field-selector="status.phase=Running"
 ----
 
 It should show:
@@ -129,37 +129,37 @@ It should show:
 [source,console,role="copypaste"]
 ----
 NAME                         READY   STATUS    RESTARTS   AGE
-inventory-2-2p9bx            2/2     Running   0          65s
-inventory-database-2-4rzlh   2/2     Running   0          82s
+transaction-2-2p9bx            2/2     Running   0          65s
+transaction-database-2-4rzlh   2/2     Running   0          82s
 ----
 
-Do the same for the catalog and confirm they also show the "2/2" pods running:
+Do the same for the  account and confirm they also show the "2/2" pods running:
 
 [source,sh,role="copypaste"]
 ----
-oc get pods -n {{USER_ID}}-catalog --field-selector="status.phase=Running"
+oc get pods -n {{USER_ID}}- account --field-selector="status.phase=Running"
 ----
 
 [source,console,role="copypaste"]
 ----
 NAME                         READY   STATUS    RESTARTS   AGE
-catalog-database-2-djmbd     2/2     Running   0          39m
-catalog-springboot-2-x7cf6   2/2     Running   0          39m
+ account-database-2-djmbd     2/2     Running   0          39m
+ account-springboot-2-x7cf6   2/2     Running   0          39m
 ----
 
 [WARNING]
 ====
-It may take a minute or two before the `inventory` and `catalog` services are recognized and brought into the mesh.
+It may take a minute or two before the `transaction` and ` account` services are recognized and brought into the mesh.
 ====
 
-Next, let's create a virtual service to send incoming traffic to the catalog. Open the empty `catalog-default.yaml` file in _catalog/rules_ directory to copy the following _VirtualService_ into the empty file using CodeReady Workspaces:
+Next, let's create a virtual service to send incoming traffic to the  account. Open the empty ` account-default.yaml` file in _ account/rules_ directory to copy the following _VirtualService_ into the empty file using CodeReady Workspaces:
 
 [source,yaml, role="copypaste"]
 ----
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: catalog-default
+  name:  account-default
 spec:
   hosts:
   - "istio-ingressgateway-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}"
@@ -168,14 +168,14 @@ spec:
   http:
     - match:
         - uri:
-            exact: /services/products
+            exact: /services/accounts
         - uri:
-            exact: /services/product
+            exact: /services/account
         - uri:
             exact: /
       route:
         - destination:
-            host: catalog-springboot
+            host:  account-springboot
             port:
               number: 8080
 ----
@@ -184,23 +184,23 @@ Execute the following command in CodeReady Workspaces Terminal:
 
 [source,sh,role="copypaste"]
 ----
-oc create -f $CHE_PROJECTS_ROOT/cloud-native-workshop-v2m3-labs/catalog/rules/catalog-default.yaml -n {{ USER_ID }}-catalog
+oc create -f $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/ account/rules/ account-default.yaml -n {{ USER_ID }}- account
 ----
 
 Access the http://istio-ingressgateway-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}[Catalog Service Page^] and ensure it should look something like:
 
-image::catalog-ui-gateway.png[catalog, 700]
+image:: account-ui-gateway.png[ account, 700]
 
 [NOTE]
 ====
 It takes a few seconds to reconcile _istio ingress_ with the _gateway_ and _virtual service_. Leave this page open as the _Catalog UI browser_ creates traffic (every 2 seconds) between services, which is useful for testing.
 ====
 
-Ensure if we injected _side car_ to each pods. Access the https://kiali-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}/console/graph/namespaces/?edges=noEdgeLabels&graphType=versionedApp&namespaces={{ USER_ID }}-catalog%2C{{ USER_ID }}-inventory&unusedNodes=false&injectServiceNodes=true&duration=60&pi=15000&layout=dagre[Kiali Graph page^] and verify that *{{ USER_ID }}-inventory*, *{{ USER_ID }}-catalog* are selected _Namespaces_ then enable *Traffic Animation* in the _Display_ drop-down to see animated traffic flow from _Catalog service_ to _Inventory service_:
+Ensure if we injected _side car_ to each pods. Access the https://kiali-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}/console/graph/namespaces/?edges=noEdgeLabels&graphType=versionedApp&namespaces={{ USER_ID }}- account%2C{{ USER_ID }}-transaction&unusedNodes=false&injectServiceNodes=true&duration=60&pi=15000&layout=dagre[Kiali Graph page^] and verify that *{{ USER_ID }}-transaction*, *{{ USER_ID }}- account* are selected _Namespaces_ then enable *Traffic Animation* in the _Display_ drop-down to see animated traffic flow from _Catalog service_ to _Inventory service_:
 
 image::kiali_graph_sidecar.png[istio, 700]
 
-You can see the incoming traffic to the catalog service along with traffic going to both the catalog and inventory databases along each branch. This mirrors what we would expect - when you access the catalog frontend, a call is made to the catalog backend, which in turn access the inventory and combines it with catalog data and returns the result for display.
+You can see the incoming traffic to the  account service along with traffic going to both the  account and transaction databases along each branch. This mirrors what we would expect - when you access the  account frontend, a call is made to the  account backend, which in turn access the transaction and combines it with  account data and returns the result for display.
 
 [NOTE]
 ====
@@ -232,16 +232,16 @@ Two types of faults can be injected:
 * _Delays_ are timing failures. They mimic increased network latency or an overloaded upstream service.
 * _Aborts_ are crash failures. They mimic failures in upstream services. Aborts usually manifest in the form of HTTP error codes or TCP connection failures.
 
-To test our application microservices for resiliency, we will inject a failure in *50%* of the requests to the _inventory_ service, causing the service to appear to fail (and return `HTTP 5xx` errors) half of the time.
+To test our application microservices for resiliency, we will inject a failure in *50%* of the requests to the _transaction_ service, causing the service to appear to fail (and return `HTTP 5xx` errors) half of the time.
 
-Open the empty `inventory-default.yaml` file in the _inventory/rules_ directory and copy the following into the file:
+Open the empty `transaction-default.yaml` file in the _transaction/rules_ directory and copy the following into the file:
 
 [source,yaml,role="copypaste"]
 ----
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: inventory-default
+  name: transaction-default
 spec:
   hosts:
   - "istio-ingressgateway-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}"
@@ -250,44 +250,44 @@ spec:
   http:
     - match:
         - uri:
-            exact: /services/inventory
+            exact: /services/transactions
         - uri:
             exact: /
       route:
         - destination:
-            host: inventory
+            host: transaction
             port:
               number: 8080
 ----
 
-Delete the gateway to direct route catalog that was setup earlier with:
+Delete the gateway to direct route  account that was setup earlier with:
 
 [source,sh,role="copypaste"]
 ----
-oc delete -f $CHE_PROJECTS_ROOT/cloud-native-workshop-v2m3-labs/catalog/rules/catalog-default.yaml -n {{ USER_ID }}-catalog
+oc delete -f $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/ account/rules/ account-default.yaml -n {{ USER_ID }}- account
 ----
 
-Create the new VirtualService to direct traffic to the inventory service by running the following command via CodeReady Workspaces Terminal:
+Create the new VirtualService to direct traffic to the transaction service by running the following command via CodeReady Workspaces Terminal:
 
 [source,sh,role="copypaste"]
 ----
-oc create -f $CHE_PROJECTS_ROOT/cloud-native-workshop-v2m3-labs/inventory/rules/inventory-default.yaml -n {{ USER_ID }}-inventory
+oc create -f $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/transaction/rules/transaction-default.yaml -n {{ USER_ID }}-transaction
 ----
 
-Now, you can test if the inventory service works correctly via accessing the http://istio-ingressgateway-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}[CoolStore Inventory page^]. If you still see _Coolstore Catalog_ then reload the page to see _Coolstore Inventory_ with kbd:[CTRL+F5] (or kbd:[Command+Shift+R] on Mac OS).
+Now, you can test if the transaction service works correctly via accessing the http://istio-ingressgateway-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}[CoolStore Inventory page^]. If you still see _Coolstore Catalog_ then reload the page to see _Coolstore Inventory_ with kbd:[CTRL+F5] (or kbd:[Command+Shift+R] on Mac OS).
 
-image::inventory-ui-gateway.png[fault-injection, 700]
+image::transaction-ui-gateway.png[fault-injection, 700]
 
-Let’s inject a failure (_500 status_) in *50%* of requests to _inventory_ microservices. Edit _inventory-default.yaml_ as below.
+Let’s inject a failure (_500 status_) in *50%* of requests to _transaction_ microservices. Edit _transaction-default.yaml_ as below.
 
-Open the empty `inventory-vs-fault.yaml` file in _inventory/rules_ directory and copy the following codes.
+Open the empty `transaction-vs-fault.yaml` file in _transaction/rules_ directory and copy the following codes.
 
 [source,yaml,role="copypaste"]
 ----
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: inventory-fault
+  name: transaction-fault
 spec:
   hosts:
   - "istio-ingressgateway-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}"
@@ -301,30 +301,30 @@ spec:
              value: 50
       route:
         - destination:
-            host: inventory
+            host: transaction
             port:
               number: 8080
 ----
 
-Before creating a new *inventory-fault VirtualService*, we need to delete the existing inventory-default virtualService. Run the following command via CodeReady Workspaces Terminal:
+Before creating a new *transaction-fault VirtualService*, we need to delete the existing transaction-default virtualService. Run the following command via CodeReady Workspaces Terminal:
 
 [source,sh,role="copypaste"]
 ----
-oc delete virtualservice/inventory-default -n {{ USER_ID }}-inventory
+oc delete virtualservice/transaction-default -n {{ USER_ID }}-transaction
 ----
 
 Then create a new VirtualService with this command:
 
 [source,sh,role="copypaste"]
 ----
-oc create -f $CHE_PROJECTS_ROOT/cloud-native-workshop-v2m3-labs/inventory/rules/inventory-vs-fault.yaml -n {{ USER_ID }}-inventory
+oc create -f $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/transaction/rules/transaction-vs-fault.yaml -n {{ USER_ID }}-transaction
 ----
 
 Let’s find out if the fault injection works corectly via accessing the http://istio-ingressgateway-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}[CoolStore Inventory page^] once again. You will see that the *Status* of CoolStore Inventory continues to change between *DEAD* and *OK*:
 
-image::inventory-dead-ok.png[fault-injection, 700]
+image::transaction-dead-ok.png[fault-injection, 700]
 
-Back on the https://kiali-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}/console/graph/namespaces/?edges=noEdgeLabels&graphType=versionedApp&namespaces={{ USER_ID }}-catalog%2C{{ USER_ID }}-inventory&unusedNodes=false&injectServiceNodes=true&duration=60&pi=15000&layout=dagre[Kiali Graph page^] and you will see `red` traffic from _istio-ingressgateway_ as well as around 50% of requests are displayed as _5xx_ on the right side, _HTTP Traffic_. It may not be _exactly_ 50% since some traffic is coming from the catalog and ingress gateway at the same time, but it will approach 50% over time.
+Back on the https://kiali-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}/console/graph/namespaces/?edges=noEdgeLabels&graphType=versionedApp&namespaces={{ USER_ID }}- account%2C{{ USER_ID }}-transaction&unusedNodes=false&injectServiceNodes=true&duration=60&pi=15000&layout=dagre[Kiali Graph page^] and you will see `red` traffic from _istio-ingressgateway_ as well as around 50% of requests are displayed as _5xx_ on the right side, _HTTP Traffic_. It may not be _exactly_ 50% since some traffic is coming from the  account and ingress gateway at the same time, but it will approach 50% over time.
 
 [WARNING]
 ====
@@ -333,16 +333,16 @@ Kiali "looks back" and records/displays the last minute of traffic, so if you're
 
 image::inventlry-vs-error-kiali.png[fault-injection,700]
 
-Let’s now add a 5 second delay for the `inventory` service.
+Let’s now add a 5 second delay for the `transaction` service.
 
-Open the empty `inventory-vs-fault-delay.yaml` file in _inventory/rules_ directory and copy the following code into it:
+Open the empty `transaction-vs-fault-delay.yaml` file in _transaction/rules_ directory and copy the following code into it:
 
 [source,yaml,role="copypaste"]
 ----
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: inventory-fault-delay
+  name: transaction-fault-delay
 spec:
   hosts:
   - "istio-ingressgateway-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}"
@@ -356,26 +356,26 @@ spec:
              value: 100
       route:
         - destination:
-            host: inventory
+            host: transaction
             port:
               number: 8080
 ----
 
-Delete the existing inventory-fault VirtualService in CodeReady Workspaces Terminal:
+Delete the existing transaction-fault VirtualService in CodeReady Workspaces Terminal:
 
 [source,sh,role="copypaste"]
 ----
-oc delete virtualservice/inventory-fault -n {{ USER_ID }}-inventory
+oc delete virtualservice/transaction-fault -n {{ USER_ID }}-transaction
 ----
 
 Then create a new virtualservice:
 
 [source,sh,role="copypaste"]
 ----
-oc create -f $CHE_PROJECTS_ROOT/cloud-native-workshop-v2m3-labs/inventory/rules/inventory-vs-fault-delay.yaml -n {{ USER_ID }}-inventory
+oc create -f $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/transaction/rules/transaction-vs-fault-delay.yaml -n {{ USER_ID }}-transaction
 ----
 
-Go to the *Kiali Graph* you opened earlier and you will see that the `green` traffic from _istio-ingressgateway_ is delayed for requests coming from inventory service. Note that you need to check *Traffic Animation* in the _Display_ select box.
+Go to the *Kiali Graph* you opened earlier and you will see that the `green` traffic from _istio-ingressgateway_ is delayed for requests coming from transaction service. Note that you need to check *Traffic Animation* in the _Display_ select box.
 
 [NOTE]
 ====
@@ -384,22 +384,22 @@ You may still see "red" traffic from our previous fault injections, but those wi
 
 image::inventlry-vs-delay-kiali.png[fault-injection,700]
 
-Click on the "edge" (the line between `istio-ingressgateway` and `inventory`) and then scroll to the bottom of the right-side graph showing the _HTTP Request Response Time_. Hover over the black _average_ data point to confirm that the average response time is about 5000ms (5 seconds) as expected:
+Click on the "edge" (the line between `istio-ingressgateway` and `transaction`) and then scroll to the bottom of the right-side graph showing the _HTTP Request Response Time_. Hover over the black _average_ data point to confirm that the average response time is about 5000ms (5 seconds) as expected:
 
 image::5sdelay.png[delay, 800]
 
-If the Inventory’s front page was set to correctly handle delays, we expect it to load within approximately 5 seconds. To see the web page response times, open the Developer Tools menu in IE, Chrome or Firefox (typically, key combination kbd:[CTRL+SHIFT+I] or kbd:[CMD+ALT+I] on a Mac), select the `Network` tab, and reload the inventory web page.
+If the Inventory’s front page was set to correctly handle delays, we expect it to load within approximately 5 seconds. To see the web page response times, open the Developer Tools menu in IE, Chrome or Firefox (typically, key combination kbd:[CTRL+SHIFT+I] or kbd:[CMD+ALT+I] on a Mac), select the `Network` tab, and reload the transaction web page.
 
 You will see and feel that the webpage loads in about 5 seconds:
 
-image::inventory-webui-delay.png[Delay, 700]
+image::transaction-webui-delay.png[Delay, 700]
 
 Before we will move to the next step, clean up the fault injection and set the default virtual service once again using these commands in a Terminal:
 
 [source,sh,role="copypaste"]
 ----
-oc delete virtualservice/inventory-fault-delay -n {{ USER_ID }}-inventory && \
-oc create -f $CHE_PROJECTS_ROOT/cloud-native-workshop-v2m3-labs/inventory/rules/inventory-default.yaml -n {{ USER_ID }}-inventory
+oc delete virtualservice/transaction-fault-delay -n {{ USER_ID }}-transaction && \
+oc create -f $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/transaction/rules/transaction-default.yaml -n {{ USER_ID }}-transaction
 ----
 
 Also, close the tabs in your browser for the Inventory and Catalog services to avoid unnecessary load, and stop the endless `for` loop you started in the beginning of this lab in CodeReady by closing the Terminal window that was running it.
@@ -430,16 +430,16 @@ Each circuit breaking limit is configurable and tracked on a per upstream cluste
 
 Let’s add a circuit breaker to the calls to the *Inventory service*. Instead of using a _VirtualService_ object, circuit breakers in Istio are defined as _DestinationRule_ objects. DestinationRule defines policies that apply to traffic intended for a service after routing has occurred. These rules specify configuration for load balancing, connection pool size from the sidecar, and outlier detection settings to detect and evict unhealthy hosts from the load balancing pool.
 
-Open the empty *inventory-cb.yaml* file in _inventory/rules_ directory and add this code to the file to enable circuit breaking when calling the Inventory service:
+Open the empty *transaction-cb.yaml* file in _transaction/rules_ directory and add this code to the file to enable circuit breaking when calling the Inventory service:
 
 [source,yaml,role="copypaste"]
 ----
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
-  name: inventory-cb
+  name: transaction-cb
 spec:
-  host: inventory
+  host: transaction
   trafficPolicy:
     connectionPool:
       tcp:
@@ -453,10 +453,10 @@ Run the following command via CodeReady Workspaces Terminal to then create the r
 
 [source,sh,role="copypaste"]
 ----
-oc create -f $CHE_PROJECTS_ROOT/cloud-native-workshop-v2m3-labs/inventory/rules/inventory-cb.yaml -n {{ USER_ID }}-inventory
+oc create -f $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/transaction/rules/transaction-cb.yaml -n {{ USER_ID }}-transaction
 ----
 
-We set the Inventory service’s maximum connections to 1 and maximum pending requests to 1. Thus, if we send more than 2 requests within a short period of time to the inventory service, 1 will go through, 1 will be pending, and any additional requests will be denied until the pending request is processed. Furthermore, it will detect any hosts that return a server error (HTTP 5xx) and eject the pod out of the load balancing pool for 15 minutes. You can visit here to check the https://istio.io/docs/tasks/traffic-management/circuit-breaking[Istio spec^] for more details on what each configuration
+We set the Inventory service’s maximum connections to 1 and maximum pending requests to 1. Thus, if we send more than 2 requests within a short period of time to the transaction service, 1 will go through, 1 will be pending, and any additional requests will be denied until the pending request is processed. Furthermore, it will detect any hosts that return a server error (HTTP 5xx) and eject the pod out of the load balancing pool for 15 minutes. You can visit here to check the https://istio.io/docs/tasks/traffic-management/circuit-breaking[Istio spec^] for more details on what each configuration
 parameter does.
 
 === 4. Overload the service
@@ -472,20 +472,20 @@ siege --verbose --time=1M --concurrent=10 'http://istio-ingressgateway-{{ USER_I
 
 This will run for 1 minute, and you'll likely errors like `[error] Failed to make an SSL connection: 5` which indicates that the circuit breaker is tripping and stopping the flood of requests from going to the service.
 
-To see this, open the https://grafana-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}/d/LJ_uJAvmk/istio-service-dashboard?orgId=1&refresh=10s&var-service=inventory.{{ USER_ID }}-inventory.svc.cluster.local&var-srcns=All&var-srcwl=All&var-dstns=All&var-dstwl=All[Istio Service Dashboard^] in Grafana and ensure to see _Client Success Rate(non-5xx responses)_ of inventory service is no longer at 100%:
+To see this, open the https://grafana-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}/d/LJ_uJAvmk/istio-service-dashboard?orgId=1&refresh=10s&var-service=transaction.{{ USER_ID }}-transaction.svc.cluster.local&var-srcns=All&var-srcwl=All&var-dstns=All&var-dstwl=All[Istio Service Dashboard^] in Grafana and ensure to see _Client Success Rate(non-5xx responses)_ of transaction service is no longer at 100%:
 
 [NOTE]
 ====
 It may take 10-20 seconds before the evidence of the circuit breaker is visible within the Grafana dashboard, due to the not-quite-realtime nature of Prometheus metrics and Grafana refresh periods and general network latency. You can also re-run the `siege` command to force more failures.
 ====
 
-image::inventory-circuit-breaker-grafana.png[circuit-breaker, 700]
+image::transaction-circuit-breaker-grafana.png[circuit-breaker, 700]
 
 That’s the circuit breaker in action, limiting the number of requests to the service. In practice your limits would be much higher.
 
 You can also see the Circuit Breaker triggering `HTTP 503` errors in the animation:
 
-image::inventory-circuit-breaker-kiali.png[circuit-breaker, 700]
+image::transaction-circuit-breaker-kiali.png[circuit-breaker, 700]
 
 In practice, these `503`s would trigger upstream fallbacks while the overloaded service is given a chance to recover.
 
@@ -493,9 +493,9 @@ Before we move on the next step, clear existing destinationrule, virtural servic
 
 [source,sh,role="copypaste"]
 ----
-oc delete destinationrule/inventory-cb -n {{ USER_ID }}-inventory && \
-oc delete virtualservice/inventory-default -n {{ USER_ID }}-inventory && \
-oc create -f $CHE_PROJECTS_ROOT/cloud-native-workshop-v2m3-labs/catalog/rules/catalog-default.yaml -n {{ USER_ID }}-catalog
+oc delete destinationrule/transaction-cb -n {{ USER_ID }}-transaction && \
+oc delete virtualservice/transaction-default -n {{ USER_ID }}-transaction && \
+oc create -f $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/ account/rules/ account-default.yaml -n {{ USER_ID }}- account
 ----
 
 === 6. Enable Authentication using Single Sign-on
@@ -517,7 +517,7 @@ _Red Hat Single Sign-On (RH-SSO)_ is based on the *Keycloak* project and enables
 * *Identity Brokering* - Integrates with 3rd-party Identity Providers including leading social networks as identity source.
 * *REST APIs and Administration GUI* - Specify user federation, role mapping, and client applications with easy-to-use Administration GUI and REST APIs.
 
-We will deploy RH-SSO in a new project. Go to the {{ CONSOLE_URL }}/topology/ns/{{ USER_ID }}-catalog[Topology View^], click on *Create Project*:
+We will deploy RH-SSO in a new project. Go to the {{ CONSOLE_URL }}/topology/ns/{{ USER_ID }}- account[Topology View^], click on *Create Project*:
 
 image::create_project_topology.png[rhsso, 500]
 
@@ -531,9 +531,9 @@ Click on *From Catalog* in Topology view:
 
 image::create_project_fc.png[rhsso, 700]
 
-Type `ccn-sso` in search box and click on *CCN + Red Hat Single Sign-On 7.4 on OpenJDK + PostgreSQL* catalog. Then click on *Instantiate Template*:
+Type `ccn-sso` in search box and click on *CCN + Red Hat Single Sign-On 7.4 on OpenJDK + PostgreSQL*  account. Then click on *Instantiate Template*:
 
-image::catalog_rhsso.png[rhsso, 700]
+image:: account_rhsso.png[rhsso, 700]
 
 Type the following varialbles then leave the others as default. Click on *Create*:
 
@@ -543,7 +543,7 @@ Type the following varialbles then leave the others as default. Click on *Create
  * RH-SSO Service Username: `auth{{ USER_ID}}`
  * RH-SSO Service Password: `{{ OPENSHIFT_USER_PASSWORD }}`
 
-image::catalog_rhsso_detail.png[rhsso, 700]
+image:: account_rhsso_detail.png[rhsso, 700]
 
 Add the following labels in CodeReady Workspaces Terminal:
 
@@ -646,16 +646,16 @@ Well done, you have enabled RH-SSO to with a custom realm, user and role!
 
 ==== Rename services
 
-In upcoming versions of OpenShift Service Mesh, newer versions of Istio will https://istio.io/docs/ops/configuration/traffic-management/protocol-selection/#automatic-protocol-selection[auto-detect protocols^] like `http`. But for now, we must explicitly include the protocol name in our Kubernetes service names so that we can do advanced things like apply authentication and authorization policies. To do that, run the following commands to update the service names for both catalog and inventory:
+In upcoming versions of OpenShift Service Mesh, newer versions of Istio will https://istio.io/docs/ops/configuration/traffic-management/protocol-selection/#automatic-protocol-selection[auto-detect protocols^] like `http`. But for now, we must explicitly include the protocol name in our Kubernetes service names so that we can do advanced things like apply authentication and authorization policies. To do that, run the following commands to update the service names for both  account and transaction:
 
 [source,sh,role="copypaste"]
 ----
-oc patch -n {{ USER_ID }}-catalog svc/catalog-springboot -p '{"spec": {"ports":[{"port": 8080, "name": "http"}, {"port": 8443, "name": "https"}]}}'
+oc patch -n {{ USER_ID }}- account svc/ account-springboot -p '{"spec": {"ports":[{"port": 8080, "name": "http"}, {"port": 8443, "name": "https"}]}}'
 ----
 
 Turning to back to Istio, let’s create a user-facing authentication policy using JSON Web Tokens (JWTs) and the https://openid.net/connect/[OIDC^] authenticaiton flow.
 
-In CodeReady, open the empty *ccn-auth-config.yml* file in _catalog/rules_ directory to copy the following policy.
+In CodeReady, open the empty *ccn-auth-config.yml* file in _ account/rules_ directory to copy the following policy.
 
 [source,yaml,role="copypaste"]
 ----
@@ -663,10 +663,10 @@ apiVersion: authentication.istio.io/v1alpha1
 kind: Policy
 metadata:
   name: auth-policy
-  namespace: {{ USER_ID }}-catalog
+  namespace: {{ USER_ID }}- account
 spec:
   targets:
-  - name: catalog-springboot
+  - name:  account-springboot
   origins:
   - jwt:
       issuer: http://sso-{{ USER_ID }}-rhsso.{{ ROUTE_SUBDOMAIN }}/auth/realms/istio
@@ -685,10 +685,10 @@ Then execute the following oc command in CodeReady Workspaces Terminal to create
 
 [source,sh,role="copypaste"]
 ----
-oc create -f $CHE_PROJECTS_ROOT/cloud-native-workshop-v2m3-labs/catalog/rules/ccn-auth-config.yaml -n {{ USER_ID }}-catalog
+oc create -f $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/ account/rules/ccn-auth-config.yaml -n {{ USER_ID }}- account
 ----
 
-Now you can’t access the catalog service without authentication of RH-SSO. You confirm it using the following curl command in CodeReady Workspaces Terminal:
+Now you can’t access the  account service without authentication of RH-SSO. You confirm it using the following curl command in CodeReady Workspaces Terminal:
 
 [source,sh,role="copypaste"]
 ----
@@ -699,7 +699,7 @@ You should get and `HTTP 401 Unauthorized` and `Origin authentication failed.` m
 
 The expected response is here because the user has not been identified with a valid JWT token in RH-SSO. It normally takes `5 ~ 10 seconds` to initialize the authentication policy in Istio Mixer. After this things go quickly as policies are cached for some period of time.
 
-image::rhsso_call_catalog_noauth.png[sso, 900]
+image::rhsso_call_ account_noauth.png[sso, 900]
 
 In order to generate a correct token, run next `curl` request in CodeReady Workspaces Terminal. This command will store the output Authorization token from RH-SSO in an environment variable called *TOKEN*.
 
@@ -717,7 +717,7 @@ Once you have generated the token, re-run the curl command below with the token 
 
 [source,sh,role="copypaste"]
 ----
-curl -H "Authorization: Bearer $TOKEN" http://istio-ingressgateway-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}/services/products | jq
+curl -H "Authorization: Bearer $TOKEN" http://istio-ingressgateway-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}/services/accounts | jq
 ----
 
 You should see the following expected output:
@@ -742,7 +742,7 @@ You should see the following expected output:
 ]
 ----
 
-Congratulations! You’ve integrated RH-SSO with Istio to protect service mesh traffic to the catalog service, without having to change the application at all. Istio can use Keycloak to authenticate service-to-service calls (also called "east-west" traffic).
+Congratulations! You’ve integrated RH-SSO with Istio to protect service mesh traffic to the  account service, without having to change the application at all. Istio can use Keycloak to authenticate service-to-service calls (also called "east-west" traffic).
 
 For "north-south" traffic, such as traffic coming in from a frontend web application, RH-SSO provides https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.3/html/securing_applications_and_services_guide/openid_connect_3[various adapters^] for apps like Spring Boot, JBoss EAP and others to configure your apps to authenticate against RH-SSO. Quarkus also provides MicroProfile JWT and Keycloak adapters for those types of apps. See the https://quarkus.io/guides[Quarkus Guides^] for more detail.
 
