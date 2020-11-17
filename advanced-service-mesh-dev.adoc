@@ -28,7 +28,7 @@ sh $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/istio/scripts/deploy-account.sh {{ 
 
 [WARNING]
 ====
-It sometimes takes time to create a new build image for network latency in OpenShift. So if you got failed to deploy account-service with *Error from server (NotFound): services " account-springboot" not found*. Please try again with delay via the following command:
+It sometimes takes time to create a new build image for network latency in OpenShift. So if you got failed to deploy account-service with *Error from server (NotFound): services "account-springboot" not found*. Please try again with delay via the following command:
 ====
 
 [source, sh, role="copypaste"]
@@ -37,7 +37,7 @@ sh $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/istio/scripts/deploy-transaction.sh
 sh $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/istio/scripts/deploy-account.sh {{ USER_ID }} 3m
 ----
 
-Wait for the commands to complete. This will build and deploy the _transaction_ and _ account_ components into their own namespaces. They won’t automatically get Istio sidecar proxy containers yet, but you’ll add that in the next step!
+Wait for the commands to complete. This will build and deploy the _transaction_ and _account_ components into their own namespaces. They won’t automatically get Istio sidecar proxy containers yet, but you’ll add that in the next step!
 
 === 1. Enabling automatic sidecar injection
 
@@ -50,7 +50,7 @@ The upstream version of Istio injects the sidecar by default if you have labeled
 The webhook checks the configuration of pods deploying into all projects to see if they are opting in to injection with the appropriate annotation.
 ====
 
-==== Confirm `transaction` and ` account` services are running
+==== Confirm `transaction` and `account` services are running
 
 First, confirm you have running account service and associated database with the following command:
 
@@ -64,8 +64,8 @@ You should see two pods running (one for the service, and one for its database):
 [source,console]
 ----
 NAME                         READY   STATUS    RESTARTS   AGE
- account-database-1-p5hcd     1/1     Running   0          6m4s
- account-springboot-1-jdrfs   1/1     Running   0          5m
+account-database-1-p5hcd     1/1     Running   0          6m4s
+account-springboot-1-jdrfs   1/1     Running   0          5m
 ----
 
 Do the same for transaction:
@@ -88,7 +88,7 @@ transaction-database-1-6tvxs   1/1     Running   0          5m16s
 
 OpenShift Service Mesh requires that applications "opt-in" to being part of a service mesh by default. To "opt-in" an app, you need to add an annotation which is a flag to istio to attach a sidecar and bring the app into the mesh.
 
-Rather than manually adding the annotations necessary to inject istio sidecars, run the following commands to add the annotations which will trigger a sidecar to be injected into our _transaction_ and _ account_ microservices, as well as their associated databases.
+Rather than manually adding the annotations necessary to inject istio sidecars, run the following commands to add the annotations which will trigger a sidecar to be injected into our _transaction_ and _account_ microservices, as well as their associated databases.
 
 First, do the databases and wait for them to be re-deployed:
 [source,sh,role="copypaste"]
@@ -143,16 +143,16 @@ oc get pods -n {{USER_ID}}-account --field-selector="status.phase=Running"
 [source,console,role="copypaste"]
 ----
 NAME                         READY   STATUS    RESTARTS   AGE
- account-database-2-djmbd     2/2     Running   0          39m
- account-springboot-2-x7cf6   2/2     Running   0          39m
+account-database-2-djmbd     2/2     Running   0          39m
+account-springboot-2-x7cf6   2/2     Running   0          39m
 ----
 
 [WARNING]
 ====
-It may take a minute or two before the `transaction` and ` account` services are recognized and brought into the mesh.
+It may take a minute or two before the `transaction` and `account` services are recognized and brought into the mesh.
 ====
 
-Next, let's create a virtual service to send incoming traffic to the account. Open the empty `account-default.yaml` file in _ account/rules_ directory to copy the following _VirtualService_ into the empty file using CodeReady Workspaces:
+Next, let's create a virtual service to send incoming traffic to the account. Open the empty `account-default.yaml` file in _account/rules_ directory to copy the following _VirtualService_ into the empty file using CodeReady Workspaces:
 
 [source,yaml, role="copypaste"]
 ----
@@ -187,7 +187,7 @@ oc create -f $CHE_PROJECTS_ROOT/fsi-workshop-v2m3-labs/account/rules/account-def
 
 Access the http://istio-ingressgateway-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}[Catalog Service Page^] and ensure it should look something like:
 
-image:: account-ui-gateway.png[ account, 700]
+image::account-ui-gateway.png[account, 700]
 
 [NOTE]
 ====
@@ -531,7 +531,7 @@ image::create_project_fc.png[rhsso, 700]
 
 Type `ccn-sso` in search box and click on *CCN + Red Hat Single Sign-On 7.4 on OpenJDK + PostgreSQL* account. Then click on *Instantiate Template*:
 
-image:: account_rhsso.png[rhsso, 700]
+image::account_rhsso.png[rhsso, 700]
 
 Type the following varialbles then leave the others as default. Click on *Create*:
 
@@ -541,7 +541,7 @@ Type the following varialbles then leave the others as default. Click on *Create
  * RH-SSO Service Username: `auth{{ USER_ID}}`
  * RH-SSO Service Password: `{{ OPENSHIFT_USER_PASSWORD }}`
 
-image:: account_rhsso_detail.png[rhsso, 700]
+image::account_rhsso_detail.png[rhsso, 700]
 
 Add the following labels in CodeReady Workspaces Terminal:
 
@@ -653,7 +653,7 @@ oc patch -n {{ USER_ID }}-account svc/account-springboot -p '{"spec": {"ports":[
 
 Turning to back to Istio, let’s create a user-facing authentication policy using JSON Web Tokens (JWTs) and the https://openid.net/connect/[OIDC^] authenticaiton flow.
 
-In CodeReady, open the empty *ccn-auth-config.yml* file in _ account/rules_ directory to copy the following policy.
+In CodeReady, open the empty *ccn-auth-config.yml* file in _account/rules_ directory to copy the following policy.
 
 [source,yaml,role="copypaste"]
 ----
@@ -697,7 +697,7 @@ You should get and `HTTP 401 Unauthorized` and `Origin authentication failed.` m
 
 The expected response is here because the user has not been identified with a valid JWT token in RH-SSO. It normally takes `5 ~ 10 seconds` to initialize the authentication policy in Istio Mixer. After this things go quickly as policies are cached for some period of time.
 
-image::rhsso_call_ account_noauth.png[sso, 900]
+image::rhsso_call_account_noauth.png[sso, 900]
 
 In order to generate a correct token, run next `curl` request in CodeReady Workspaces Terminal. This command will store the output Authorization token from RH-SSO in an environment variable called *TOKEN*.
 
