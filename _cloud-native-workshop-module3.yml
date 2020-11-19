@@ -1,5 +1,5 @@
 id: "cloudnative"
-name: ""Beyond 2020 FSI Hands-on Experience - Cloud-Native Dev track""
+name: "Beyond 2020 FSI Hands-on Experience - Cloud-Native Dev track"
 
 content:
   url: https://raw.githubusercontent.com/rmarins/fsi-workshop-v2m3-guides.git/ocp-4.5
