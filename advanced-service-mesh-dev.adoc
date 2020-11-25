@@ -80,7 +80,7 @@ You should again see two pods running (one for the service, and one for its data
 [source,console]
 ----
 NAME                         READY   STATUS    RESTARTS   AGE
-transaction-quarkus-1-87smf  1/1     Running   0          3m12s
+transaction-1-87smf          1/1     Running   0          3m12s
 transaction-database-1-6tvxs 1/1     Running   0          5m16s
 ----
 
@@ -110,10 +110,10 @@ Next, let's add sidecars to our services and wait for them to be re-deployed:
 
 [source,sh,role="copypaste"]
 ----
-oc patch dc/transaction-quarkus -n {{USER_ID}}-transaction --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
-oc rollout latest dc/transaction-quarkus -n {{USER_ID}}-transaction && \
+oc patch dc/transaction -n {{USER_ID}}-transaction --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
+oc rollout latest dc/transaction -n {{USER_ID}}-transaction && \
 oc patch dc/account-springboot -n {{USER_ID}}-account --type='json' -p '[{"op":"add","path":"/spec/template/metadata/annotations", "value": {"sidecar.istio.io/inject": "'"true"'"}}]' && \
-oc rollout status -w dc/transaction-quarkus -n {{USER_ID}}-transaction && \
+oc rollout status -w dc/transaction -n {{USER_ID}}-transaction && \
 oc rollout status -w dc/account-springboot -n {{USER_ID}}-account
 ----
 
@@ -129,7 +129,7 @@ It should show:
 [source,console,role="copypaste"]
 ----
 NAME                         READY   STATUS    RESTARTS   AGE
-transaction-quarkus-2-2p9bx  2/2     Running   0          65s
+transaction-2-2p9bx          2/2     Running   0          65s
 transaction-database-2-4rzlh 2/2     Running   0          82s
 ----
 
@@ -253,7 +253,7 @@ spec:
             exact: /
       route:
         - destination:
-            host: transaction-quarkus
+            host: transaction
             port:
               number: 8080
 ----
@@ -299,7 +299,7 @@ spec:
              value: 50
       route:
         - destination:
-            host: transaction-quarkus
+            host: transaction
             port:
               number: 8080
 ----
@@ -354,7 +354,7 @@ spec:
              value: 100
       route:
         - destination:
-            host: transaction-quarkus
+            host: transaction
             port:
               number: 8080
 ----
@@ -437,7 +437,7 @@ kind: DestinationRule
 metadata:
   name: transaction-cb
 spec:
-  host: transaction-quarkus
+  host: transaction
   trafficPolicy:
     connectionPool:
       tcp:
@@ -470,7 +470,7 @@ siege --verbose --time=1M --concurrent=10 'http://istio-ingressgateway-{{ USER_I
 
 This will run for 1 minute, and you'll likely errors like `[error] Failed to make an SSL connection: 5` which indicates that the circuit breaker is tripping and stopping the flood of requests from going to the service.
 
-To see this, open the https://grafana-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}/d/LJ_uJAvmk/istio-service-dashboard?orgId=1&refresh=10s&var-service=transaction-quarkus.{{ USER_ID }}-transaction.svc.cluster.local&var-srcns=All&var-srcwl=All&var-dstns=All&var-dstwl=All[Istio Service Dashboard^] in Grafana and ensure to see _Client Success Rate(non-5xx responses)_ of transaction service is no longer at 100%:
+To see this, open the https://grafana-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}/d/LJ_uJAvmk/istio-service-dashboard?orgId=1&refresh=10s&var-service=transaction.{{ USER_ID }}-transaction.svc.cluster.local&var-srcns=All&var-srcwl=All&var-dstns=All&var-dstwl=All[Istio Service Dashboard^] in Grafana and ensure to see _Client Success Rate(non-5xx responses)_ of transaction service is no longer at 100%:
 
 [NOTE]
 ====
