@@ -428,7 +428,7 @@ Each circuit breaking limit is configurable and tracked on a per upstream cluste
 
 Let’s add a circuit breaker to the calls to the *Transaction service*. Instead of using a _VirtualService_ object, circuit breakers in Istio are defined as _DestinationRule_ objects. DestinationRule defines policies that apply to traffic intended for a service after routing has occurred. These rules specify configuration for load balancing, connection pool size from the sidecar, and outlier detection settings to detect and evict unhealthy hosts from the load balancing pool.
 
-Open the empty *transaction-cb.yaml* file in _transaction/rules_ directory and add this code to the file to enable circuit breaking when calling the Transaction service:
+Open the empty `transaction-cb.yaml` file in _transaction/rules_ directory and add this code to the file to enable circuit breaking when calling the Transaction service:
 
 [source,yaml,role="copypaste"]
 ----
