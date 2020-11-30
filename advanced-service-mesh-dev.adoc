@@ -572,7 +572,7 @@ image::rhsso_admin_login.png[sso, 700]
 
 You will see general information of the _Istio Realm_. Click on *Login* tab and de-select (swich off) _Require SSL_ by setting it to _none_ then click on *Save*.
 
-image::rhsso_istio_realm.png[sso, 700]
+image::rhsso_istio_realm.png[sso, 900]
 
 [NOTE]
 ====
