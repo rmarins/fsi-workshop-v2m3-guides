@@ -329,7 +329,7 @@ Back on the https://kiali-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}/conso
 Kiali "looks back" and records/displays the last minute of traffic, so if you're quick you may see some of the prior traffic flows from earlier in the lab. Within 1 minute the graph should clear up and only show what you are looking for!
 ====
 
-image::inventlry-vs-error-kiali.png[fault-injection,700]
+image::transaction-vs-error-kiali.png[fault-injection,700]
 
 Let’s now add a 5 second delay for the `transaction` service.
 
@@ -380,7 +380,7 @@ Go to the *Kiali Graph* you opened earlier and you will see that the `green` tra
 You may still see "red" traffic from our previous fault injections, but those will disappear after the 1 minute time window (the default lookback period) of the graph elapses.
 ====
 
-image::inventlry-vs-delay-kiali.png[fault-injection,700]
+image::transaction-vs-delay-kiali.png[fault-injection,700]
 
 Click on the "edge" (the line between `istio-ingressgateway` and `transaction`) and then scroll to the bottom of the right-side graph showing the _HTTP Request Response Time_. Hover over the black _average_ data point to confirm that the average response time is about 5000ms (5 seconds) as expected:
 
