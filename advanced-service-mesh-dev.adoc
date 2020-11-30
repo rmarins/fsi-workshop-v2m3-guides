@@ -581,11 +581,11 @@ Red Hat Single Sign-On generates a self-signed certificate the first time it run
 
 Next, create a new RH-SSO _client_ that is for trusted browser apps and web services in our _Istio_ realm. Go to *Clients* in the left menu then click on *Create*.
 
-image::rhsso_clients.png[sso, 700]
+image::rhsso_clients.png[sso, 900]
 
 Input `ccn-cli` in _Client ID_ field and click on *Save*.
 
-image::rhsso_clients_create.png[sso, 700]
+image::rhsso_clients_create.png[sso, 900]
 
 On the next screen, you will see details on the *Settings* tab, the only thing you need to do is to input _Valid Redirect URIs_ that can be used after successful login or logout for clients.
 
@@ -594,27 +594,27 @@ On the next screen, you will see details on the *Settings* tab, the only thing y
 http://istio-ingressgateway-{{ USER_ID }}-istio-system.{{ ROUTE_SUBDOMAIN }}/*
 ----
 
-image::rhsso_clients_settings.png[sso, 700]
+image::rhsso_clients_settings.png[sso, 900]
 
 Don’t forget to click *Save*!
 
 Now, let’s define a role that will be assigned to your credentials, let’s create a simple role called *ccn_auth*. Go to *Roles* in the left menu then click on _Add Role_.
 
-image::rhsso_roles.png[sso, 700]
+image::rhsso_roles.png[sso, 900]
 
 Input `ccn_auth` in _Role Name_ field and click on *Save*.
 
-image::rhsso_roles_create.png[sso, 700]
+image::rhsso_roles_create.png[sso, 900]
 
 Next let’s update the password policy for our _authuser_.
 
 Go to *Users* menu on the left side menu then click on *View all users*.
 
-image::rhsso_users.png[sso, 700]
+image::rhsso_users.png[sso, 900]
 
 If you click on the `auth{{ USER_ID }}` ID then you will find more information such as Details, Attributes, Credentials, Role Mappings, Groups, Contents, and Sessions. You don’t need to update any details in this step.
 
-image::rhsso_istio_users_details.png[sso, 700]
+image::rhsso_istio_users_details.png[sso, 900]
 
 Go to *Credentials* tab and input the following variables:
 
@@ -626,19 +626,19 @@ Make sure to turn off the *Temporary* flag unless you want the auth{{ USER_ID }}
 
 Click on *Reset Password*.
 
-image::rhsso_users_credentials.png[sso, 700]
+image::rhsso_users_credentials.png[sso, 900]
 
 Then click on *Change password* in the popup window.
 
-image::rhsso_users_change_pwd.png[sso, 700]
+image::rhsso_users_change_pwd.png[sso, 900]
 
 Now proceed to the *Role Mappings* tab and assign the role *ccn_auth* via clicking on _Add selected >_.
 
-image::rhsso_rolemapping.png[sso, 700]
+image::rhsso_rolemapping.png[sso, 900]
 
 You will confirm the ccn_auth role in _Assigned Roles_ box.
 
-image::rhsso_rolemapping_assigned.png[sso, 700]
+image::rhsso_rolemapping_assigned.png[sso, 900]
 
 Well done, you have enabled RH-SSO to with a custom realm, user and role!
 
@@ -723,19 +723,27 @@ You should see the following expected output:
 [source,json]
 ----
 ...
- {
-    "itemId": "444435",
-    "name": "Quarkus twill cap",
-    "desc": "",
-    "price": 13,
-    "quantity": 600
+  {
+    "balance": 216.95,
+    "beginBalance": 166.08,
+    "creditLine": 5000,
+    "beginBalanceTimeStamp": "2019-07-23",
+    "accountId": "5007",
+    "description": "Visa",
+    "type": "Credit",
+    "balancDate": "2019-10-27",
+    "remainingCredit": 4783.05
   },
   {
-    "itemId": "444437",
-    "name": "Nanobloc Universal Webcam Cover",
-    "desc": "",
-    "price": 2.75,
-    "quantity": 230
+    "balance": 57601.35,
+    "beginBalance": 5433.89,
+    "creditLine": 0,
+    "beginBalanceTimeStamp": "2019-07-15",
+    "accountId": "5008",
+    "description": "Super Interest Account",
+    "type": "Savings",
+    "balancDate": "2019-10-28",
+    "remainingCredit": 0
   }
 ]
 ----
