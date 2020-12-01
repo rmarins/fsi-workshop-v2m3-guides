@@ -88,6 +88,15 @@ https://github.com/rmarins/fsi-workshop-v2m3-labs.git
 
 image::crw-clone-repo.png[crw, 600, align="center"]
 
+[NOTE]
+====
+Make sure you close the **Add to Workspace** dialog that appears on the bottom-right after the import is complete. Click the **[X]**
+to close this dialog.
+====
+
+image::crw-clone-close.png[crw, 400, align="right"]
+
+
 The project is imported into your workspace and is visible in the project explorer after clicking the *Explorer* pane at the upper right:
 
 image::crw-clone-explorer.png[crw, 600, align="center"]
