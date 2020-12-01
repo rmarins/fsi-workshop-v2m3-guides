@@ -8,15 +8,15 @@ In this lab, we will learn the advanced usecases of service mesh. The lab showca
 * Circuit Breaking
 * Rate Limiting
 
-These features are important for any distributed applications built on top of Kubernetes/Openshift. We use a different set of microservices that you will be building and deploying. Our application is called the _bankdemo microservice_ developed in prior labs (i.e Account, Transaction) that you developed and deployed to
-OpenShift cluster in _Module 1_ or/and _Module 2_.
+These features are important for any distributed applications built on top of Kubernetes/Openshift. We use a different set of microservices that you will be building and deploying.
+Our application is called the _bankdemo microservice_ developed prior to this lab (i.e Account, Transaction).
 
 [WARNING]
 ====
 If you have already deployed the _transaction_ and _account_ microservices from Module 1, you can skip this step and move to section "1. Enabling automatic sidecar injection"
 ====
 
-**In case you haven’t done Module 1 or Module 2 today**, or you didn’t quite complete them, you should deploy the bankdemo application and microservices by executing the following shell scripts in CodeReady Workspaces Terminal:
+You should deploy the bankdemo application and microservices by executing the following shell scripts in CodeReady Workspaces Terminal:
 
 The following script will deploy the transaction service:
 
